@@ -6,6 +6,7 @@
 
 //var rokuip = '192.168.1.3';
 var keydown = false;
+var currentkeydown = null;
 
 //
 // Function: load()
@@ -35,6 +36,7 @@ function load()
 //
 function remove()
 {
+    alert('remove');
     // Stop any timers to prevent CPU usage
     // Remove any preferences as needed
     widget.setPreferenceForKey(null, dashcode.createInstancePreferenceKey("rokuip"));
@@ -46,6 +48,14 @@ function remove()
 //
 function hide()
 {
+    if (currentkeydown != null)
+    {
+        var button = getButtonFromCmd(currentkeydown);
+        if (button != null && button.object != null && button.object._setPressed)
+            button.object._setPressed(false);
+        rokusend("keyup/"+currentkeydown);
+    }
+
     // Stop any timers to prevent CPU usage
 }
 
@@ -83,14 +93,16 @@ function showBack(event)
     var front = document.getElementById("front");
     var back = document.getElementById("back");
 
-    if (window.widget) {
+    if (window.widget)
+    {
         widget.prepareForTransition("ToBack");
     }
 
     front.style.display = "none";
     back.style.display = "block";
 
-    if (window.widget) {
+    if (window.widget)
+    {
         setTimeout('widget.performTransition();', 0);
     }
 }
@@ -108,19 +120,22 @@ function showFront(event)
     var front = document.getElementById("front");
     var back = document.getElementById("back");
 
-    if (window.widget) {
+    if (window.widget)
+    {
         widget.prepareForTransition("ToFront");
     }
 
     front.style.display="block";
     back.style.display="none";
 
-    if (window.widget) {
+    if (window.widget)
+    {
         setTimeout('widget.performTransition();', 0);
     }
 }
 
-if (window.widget) {
+if (window.widget)
+{
     widget.onremove = remove;
     widget.onhide = hide;
     widget.onshow = show;
@@ -133,21 +148,58 @@ if (window.widget) {
  *  IP MANAGEMENT
  */
 
-// Function: verifyRock
-function isRokuIP(rokuip)
+// Function: verifyRoku
+// Determine the viability of the given IP and set the indicator accordingly
+//  BLACK  - No input or undecided
+//  RED    - Not a valid IP
+//  ORANGE - Valid IP, but not responding as ROKU
+//  GREEN  - Valid IP responding as ROKU
+function verifyRoku(rokuip)
 {
 
-    try {
-        var http = new XMLHttpRequest();
-        var url = "http://"+rokuip+":8060/";
-        http.open("GET", url, false);
-        http.send(null);
-        var response = http.responseText;
+    var alertloc = document.getElementById("rokuipalert");
+    alertloc.object.setValue(0);
+    
+    if (rokuip == '')
+    {
+        // no op
+    }
+    else if (!isValidIp(rokuip))
+    {
+        alertloc.object.setValue(alertloc.object.criticalValue);
+    }
+    else
+    {
+        
 
-        if (response.indexOf('Roku Streaming Player') != -1) {
-            return true;
+        try
+        {
+            var http = new XMLHttpRequest();
+            var url = "http://"+rokuip+":8060/";
+        
+            http.onreadystatechange = function()
+            {
+                if (http.readyState == XMLHttpRequest.DONE)
+                {
+                    var response = http.responseText;
+                    if (response.indexOf('Roku Streaming Player') != -1)
+                    {
+                        alertloc.object.setValue(alertloc.object.onValue);
+                    }
+                    else
+                    {
+                        alertloc.object.setValue(alertloc.object.warningValue);
+                    }
+                }
+            }
+        
+            http.open("GET", url, false);
+            http.send(null);
+
+        } catch (ex) {
+            alertloc.object.setValue(alertloc.object.warningValue);
         }
-    } catch (ex){}
+    }
     
     return false;
 }
@@ -190,26 +242,12 @@ function isValidIp(IPvalue)
 
 
 // Function: onIpChange(command)
-// Determine the viability of the given IP and set the indicator accordingly
-//  BLACK  - No input
-//  RED    - Not a valid IP
-//  ORANGE - Valid IP, but not responding as ROKU
-//  GREEN  - Valid IP responding as ROKU
 //
 function onIpChange(event)
 {
     var ip = document.getElementById("rokuipinput").value;
-    var alertloc = document.getElementById("rokuipalert");
     
-    if (ip == '')
-        alertloc.object.setValue(0);
-    else if (!isValidIp(ip))
-        alertloc.object.setValue(alertloc.object.criticalValue);
-    else if (isValidIp(ip) && !isRokuIP(ip))
-        alertloc.object.setValue(alertloc.object.warningValue);
-    else
-        alertloc.object.setValue(alertloc.object.onValue);
-    
+    verifyRoku(ip);
     rokuip = ip;
     
     if(window.widget)
@@ -231,18 +269,13 @@ function onIpChange(event)
 //
 function rokusend(command)
 {
-    var http = new XMLHttpRequest();
-    var url = "http://"+rokuip+":8060/"+command;
-    http.open("POST", url, false);
-   /* http.onreadystatechange = function() {//Call a function when the state changes.
-        if(http.readyState == 4 && http.status == 200) {
-            alert(url);
-            alert(http.responseText);
-        }
-    }*/
     try
     {
+        var http = new XMLHttpRequest();
+        var url = "http://"+rokuip+":8060/"+command;
+        http.open("POST", url, false);
         http.send(null);
+        alert('sent'+command);
     }
     catch(ex)
     {
@@ -325,13 +358,14 @@ function keypresshandler(event)
 
 //
 // Function: keydownhandler(event)
-// Called a key is pressed down.  If the front is shown and the key
+// Called when a key is pressed down.  If the front is shown and the key
 // represents a special command, a keydown is sent to the ROKU.
 //
 // event: a global onKeydown event
 //
 function keydownhandler(event)
 {
+    keydown = true;
     var front = document.getElementById("front");
     if (front.style.display=="none")
         return;
@@ -343,8 +377,9 @@ function keydownhandler(event)
         if (button != null && button.object != null && button.object._setPressed)
             button.object._setPressed(true);
         rokusend("keydown/"+command);
-        keydown = true;
+        currentkeydown = command;
     }
+    
 }
 
 
@@ -370,6 +405,7 @@ function keyuphandler(event)
         rokusend("keyup/"+command);
     }
     keydown = false;
+    currentkeydown = null;
 }
 
 
@@ -440,22 +476,10 @@ function buttonselect(event)
 //
 function parseKeyPress(event)
 {
-    var command = null;
-
-/*    if (keyboardLock && event.which >= 65 && event.which <= 90) // Uppercase 
-        return 'Lit_'+String.fromCharCode(event.which);
-    else if (keyboardLock && event.which >= 97 && event.which <= 122) // Lowercase 
-        return 'Lit_'+String.fromCharCode(event.which);
-    else if (keyboardLock && event.which >= 48 && event.which <= 57) // Numbers
-        return 'Lit_'+String.fromCharCode(event.which);
-    else if (keyboardLock && event.keyIdentifier == 'U+0020') // Space
-        return 'Lit_%20'; */
-        
-        
     if (keyboardLock && event.which >= 32 && event.which <= 126) // ASCII Printable Characters
         return 'Lit_'+escape(String.fromCharCode(event.which));
         
-    return command;
+    return null;
 }
 
 
