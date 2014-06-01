@@ -430,8 +430,8 @@ function buttonselect(event)
         
     else if (id == 'rightbutton')
     {
-        rokusend('keyup/Right');
         rokusend('keydown/Right');
+        rokusend('keyup/Right');
     }
     else if (id == 'leftbutton')
     {
