@@ -1,0 +1,5 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cp -R $DIR/rokuremote.dcproj/project.wdgt /tmp/project.wdgt
+open /tmp/project.wdgt

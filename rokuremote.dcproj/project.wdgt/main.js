@@ -4,7 +4,7 @@
  according to the license.txt file included in the project.
  */
 
-//var rokuip = '192.168.1.3';
+var rokuip = '192.168.1.101';
 var keydown = false;
 var currentkeydown = null;
 
@@ -19,11 +19,9 @@ function load()
     if(window.widget)
         rokuip = widget.preferenceForKey(dashcode.createInstancePreferenceKey("rokuip"));
 
-    
     if (rokuip == null)
-        rokuip = '';
-    
-    
+        rokuip = '0.0.0.0';
+
     var rokuipinput = document.getElementById("rokuipinput");
     rokuipinput.value = rokuip;
     onIpChange();
@@ -92,6 +90,7 @@ function showBack(event)
 {
     var front = document.getElementById("front");
     var back = document.getElementById("back");
+    var rokuinput = document.getElementById("rokuipinput");
 
     if (window.widget)
     {
@@ -105,6 +104,7 @@ function showBack(event)
     {
         setTimeout('widget.performTransition();', 0);
     }
+    rokuinput.select();
 }
 
 //
@@ -340,19 +340,21 @@ function toggleKeyboard(event)
 function keypresshandler(event)
 {
     var front = document.getElementById("front");
-    if (front.style.display=="none")
-        return;
+    var back = document.getElementById("back");
 
-    var command = parseKeyPress(event);
-    if (command != null)
+    if (event.keyIdentifier == 'U+0060') // Backtick
     {
-        rokusend("keypress/"+command);
-        if (keyboardLock)
-            signalSend(command);
+        toggleKeyboard();
+        return;
     }
 
-    if (event.keyIdentifier == 'U+001B')
-        toggleKeyboard();
+    alert(event.keyIdentifier);
+    if (back.style.display != "none" && event.keyIdentifier == "Enter")
+        showFront(event)
+
+    var command = parseKeyPress(event);
+    if (command != null && front.style.display != "none" && keyboardLock)
+        rokusend("keypress/"+command);
 }
 
 
@@ -365,19 +367,26 @@ function keypresshandler(event)
 //
 function keydownhandler(event)
 {
-    keydown = true;
     var front = document.getElementById("front");
-    if (front.style.display=="none")
+    var back = document.getElementById("back");
+
+    if (event.keyIdentifier == 'U+0060') // Backtick
         return;
 
     var command = parseKey(event);
     if (command != null && !keydown)
     {
+        keydown = true;
+
         var button = getButtonFromCmd(command);
-        if (button != null && button.object != null && button.object._setPressed)
-            button.object._setPressed(true);
-        rokusend("keydown/"+command);
-        currentkeydown = command;
+
+        if (front.style.display != "none")
+        {
+            if (button != null && button.object != null && button.object._setPressed)
+                button.object._setPressed(true);
+            rokusend("keydown/"+command);
+            currentkeydown = command;
+        }
     }
     
 }
@@ -393,6 +402,11 @@ function keydownhandler(event)
 function keyuphandler(event)
 {
     var front = document.getElementById("front");
+    var back = document.getElementById("back");
+
+    if (event.keyIdentifier == 'U+0060') // Backtick
+        return;
+
     if (front.style.display=="none")
         return;
 
@@ -400,12 +414,16 @@ function keyuphandler(event)
     if (command != null)
     {
         var button = getButtonFromCmd(command);
-        if (button != null && button.object != null && button.object._setPressed)
-            button.object._setPressed(false);
-        rokusend("keyup/"+command);
+        if (front.style.display != "none")
+        {
+            if (button != null && button.object != null && button.object._setPressed)
+                button.object._setPressed(false);
+            rokusend("keyup/"+command);
+            currentkeydown = null;
+        }
     }
+
     keydown = false;
-    currentkeydown = null;
 }
 
 
@@ -449,8 +467,10 @@ function buttonselect(event)
         rokusend('keyup/Down');
     }
     
-    else if (id == 'selectbutton')
+    else if (id == 'enterbutton')
         rokusend('keypress/Enter');
+    else if (id == 'selectbutton')
+        rokusend('keypress/Select');
     else if (id == 'fwdbutton')
         rokusend('keypress/Fwd');
     else if (id == 'playbutton')
@@ -463,9 +483,9 @@ function buttonselect(event)
     else if (id == 'backbutton')
         rokusend('keypress/Back');
     else if (id == 'infobutton')
-        rokusend('keypress/Back');
+        rokusend('keypress/Info');
     else if (id == 'searchbutton')
-        rokusend('keypress/Back');
+        rokusend('keypress/Search');
 }
 
 
@@ -543,7 +563,9 @@ function parseKey(event)
         command = 'Left';
     else if (key == 'Right')
         command = 'Right';
-    else if (key == 'Enter')
+    else if (key == 'Enter' && keyboardLock)
+        command = 'Enter';
+    else if (key == 'Enter' && !keyboardLock)
         command = 'Select';
     else if (key == 'U+0008') // Delete
         command = 'Backspace';
