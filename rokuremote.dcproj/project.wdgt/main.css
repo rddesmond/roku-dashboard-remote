@@ -152,6 +152,7 @@ body {
     margin-left: auto;
     left: 78px;
     margin-right: auto;
+    z-index: 10;
 }
 
 #leftbutton {

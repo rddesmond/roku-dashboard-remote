@@ -1,0 +1,9 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+mkdir -p "$DIR/target"
+cp -R "$DIR/rokuremote.dcproj/project.wdgt" "$DIR/target/rokuremote.wdgt"
+cd "$DIR/target"
+rm -f "rokuremote-`date +%Y%m%d`.zip"
+zip -r "rokuremote-`date +%Y%m%d`.zip" "rokuremote.wdgt"
+rm -r "rokuremote.wdgt"

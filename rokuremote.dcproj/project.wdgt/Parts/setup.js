@@ -7,6 +7,7 @@
 var dashcodePartSpecs = {
     "backbutton": { "creationFunction": "CreateButton", "leftImageWidth": 5, "onclick": "onKeyboardButton", "rightImageWidth": 5, "text": "↺" },
     "done": { "creationFunction": "CreateGlassButton", "onclick": "showFront", "text": "Done" },
+    "upbutton": { "creationFunction": "CreateButton", "leftImageWidth": 5, "onclick": "buttonselect", "rightImageWidth": 5, "text": "↑" },
     "downbutton": { "creationFunction": "CreateButton", "leftImageWidth": 5, "onclick": "buttonselect", "rightImageWidth": 5, "text": "↓" },
     "fwdbutton": { "creationFunction": "CreateButton", "leftImageWidth": 5, "onclick": "buttonselect", "rightImageWidth": 5, "text": "▶▶" },
     "homebutton": { "creationFunction": "CreateButton", "leftImageWidth": 5, "onclick": "buttonselect", "rightImageWidth": 5, "text": "home" },
@@ -22,13 +23,13 @@ var dashcodePartSpecs = {
     "selectbutton": { "creationFunction": "CreateButton", "leftImageWidth": 5, "onclick": "buttonselect", "rightImageWidth": 5, "text": "okay" },
     "text": { "creationFunction": "CreateText", "text": "Roku IP" },
     "text1": { "creationFunction": "CreateText", "text": "Command Keys" },
-    "text2": { "creationFunction": "CreateText", "text": "< - rewind" },
-    "text3": { "creationFunction": "CreateText", "text": " h - home" },
-    "text4": { "creationFunction": "CreateText", "text": "esc - keyboard mode" },
-    "text5": { "creationFunction": "CreateText", "text": "space - pause/play" },
-    "text6": { "creationFunction": "CreateText", "text": "> - fast forward" },
-    "text7": { "creationFunction": "CreateText", "text": " i - info" },
-    "text8": { "creationFunction": "CreateText", "text": "b - back" },
-    "text9": { "creationFunction": "CreateText", "text": " s - search" },
-    "upbutton": { "creationFunction": "CreateButton", "leftImageWidth": 5, "onclick": "buttonselect", "rightImageWidth": 5, "text": "↑" }
+    "text2": { "creationFunction": "CreateText", "text": "rewind" },
+    "text3": { "creationFunction": "CreateText", "text": "home" },
+    "text4": { "creationFunction": "CreateText", "text": "pause/play" },
+    "text5": { "creationFunction": "CreateText", "text": "fast forward" },
+    "text6": { "creationFunction": "CreateText", "text": "info" },
+    "text7": { "creationFunction": "CreateText", "text": "back" },
+    "text8": { "creationFunction": "CreateText", "text": "search" },
+    "text9": { "creationFunction": "CreateText", "text": "keyboard mode" },
+    "text10": { "creationFunction": "CreateText", "text": "space" }
 };
