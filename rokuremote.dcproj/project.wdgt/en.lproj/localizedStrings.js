@@ -9,5 +9,14 @@ var localizedStrings = {
     "home": "home",
     "info": "info",
     "okay": "okay",
-    "search": "search"
+    "search": "search",
+    "okay": "okay",
+    "Roku IP": "Roku IP",
+    "Command Keys": "Command Keys",
+    "rewind": "rewind",
+    "pause/play": "pause/play",
+    "fast forward": "fast forward",
+    "back": "back",
+    "keyboard mode": "keyboard mode",
+    "space": "space"
 };

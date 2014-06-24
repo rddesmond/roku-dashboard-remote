@@ -154,6 +154,7 @@ if (window.widget)
 //  RED    - Not a valid IP
 //  ORANGE - Valid IP, but not responding as ROKU
 //  GREEN  - Valid IP responding as ROKU
+var http = null;
 function verifyRoku(rokuip)
 {
 
@@ -170,13 +171,13 @@ function verifyRoku(rokuip)
     }
     else
     {
-        
-
         try
         {
-            var http = new XMLHttpRequest();
             var url = "http://"+rokuip+":8060/";
-        
+            if (null != http)
+                http.abort();
+            http = new XMLHttpRequest();
+ 
             http.onreadystatechange = function()
             {
                 if (http.readyState == XMLHttpRequest.DONE)
@@ -192,8 +193,13 @@ function verifyRoku(rokuip)
                     }
                 }
             }
+            http.ontimeout = function()
+            {
+                alertloc.object.setValue(alertloc.object.warningValue);
+            }
         
-            http.open("GET", url, false);
+            http.timeout = 5000;
+            http.open("GET", url, true);
             http.send(null);
 
         } catch (ex) {
@@ -255,6 +261,8 @@ function onIpChange(event)
         widget.setPreferenceForKey(ip, dashcode.createInstancePreferenceKey("rokuip"));
     }
 
+    return true
+
 }
 
 
@@ -273,13 +281,14 @@ function rokusend(command)
     {
         var http = new XMLHttpRequest();
         var url = "http://"+rokuip+":8060/"+command;
-        http.open("POST", url, false);
+        http.open("POST", url, true);
         http.send(null);
-        alert('sent'+command);
+        http.timeout = 500;
+        alert('sent '+command);
     }
     catch(ex)
     {
-        alert(command);
+        alert('failed '+command+': '+ ex);
     }
 }
 
@@ -348,7 +357,7 @@ function keypresshandler(event)
         return;
     }
 
-    alert(event.keyIdentifier);
+    alert("keypress " + event.keyIdentifier);
     if (back.style.display != "none" && event.keyIdentifier == "Enter")
         showFront(event)
 
@@ -407,8 +416,11 @@ function keyuphandler(event)
     if (event.keyIdentifier == 'U+0060') // Backtick
         return;
 
-    if (front.style.display=="none")
-        return;
+    if (front.style.display == "none")
+    {
+        onIpChange(event);
+	return;
+    }
 
     var command = parseKey(event);
     if (command != null)
