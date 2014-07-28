@@ -51,7 +51,7 @@ function hide()
         var button = getButtonFromCmd(currentkeydown);
         if (button != null && button.object != null && button.object._setPressed)
             button.object._setPressed(false);
-        rokusend("keyup/"+currentkeydown);
+        //rokusend("keyup/"+currentkeydown);
     }
 
     // Stop any timers to prevent CPU usage
@@ -364,6 +364,13 @@ function keypresshandler(event)
     var command = parseKeyPress(event);
     if (command != null && front.style.display != "none" && keyboardLock)
         rokusend("keypress/"+command);
+
+	
+    var command = parseKeyCommand(event)
+    if (command != null && front.style.display != "none")
+        rokusend("keypress/"+command);
+
+
 }
 
 
@@ -382,7 +389,7 @@ function keydownhandler(event)
     if (event.keyIdentifier == 'U+0060') // Backtick
         return;
 
-    var command = parseKey(event);
+    var command = parseKeyCommand()
     if (command != null && !keydown)
     {
         keydown = true;
@@ -393,7 +400,7 @@ function keydownhandler(event)
         {
             if (button != null && button.object != null && button.object._setPressed)
                 button.object._setPressed(true);
-            rokusend("keydown/"+command);
+            //rokusend("keydown/"+command);
             currentkeydown = command;
         }
     }
@@ -422,7 +429,7 @@ function keyuphandler(event)
 	return;
     }
 
-    var command = parseKey(event);
+    var command = parseKeyCommand(event);
     if (command != null)
     {
         var button = getButtonFromCmd(command);
@@ -430,7 +437,7 @@ function keyuphandler(event)
         {
             if (button != null && button.object != null && button.object._setPressed)
                 button.object._setPressed(false);
-            rokusend("keyup/"+command);
+            //rokusend("keyup/"+command);
             currentkeydown = null;
         }
     }
@@ -460,23 +467,27 @@ function buttonselect(event)
         
     else if (id == 'rightbutton')
     {
-        rokusend('keydown/Right');
-        rokusend('keyup/Right');
+        rokusend('keypress/Right');	
+        //rokusend('keydown/Right');
+        //rokusend('keyup/Right');
     }
     else if (id == 'leftbutton')
     {
-        rokusend('keydown/Left');
-        rokusend('keyup/Left');
+        rokusend('keypress/Left');	
+        //rokusend('keydown/Left');
+        //rokusend('keyup/Left');
     }
     else if (id == 'upbutton')
     {
-        rokusend('keydown/Up');
-        rokusend('keyup/Up');
+        rokusend('keypress/Up');	
+        //rokusend('keydown/Up');
+        //rokusend('keyup/Up');
     }
     else if (id == 'downbutton')
     {
-        rokusend('keydown/Down');
-        rokusend('keyup/Down');
+        rokusend('keypress/Down');	
+        //rokusend('keydown/Down');
+        //rokusend('keyup/Down');
     }
     
     else if (id == 'enterbutton')
@@ -556,10 +567,10 @@ function getButtonFromCmd(cmd)
 
 
 //
-// Function: parseKey(event)
+// Function: parseKeyCommand(event)
 // Obtain a command from a key{up/down/press} event
 //
-function parseKey(event)
+function parseKeyCommand(event)
 {
     var command = null;
 
